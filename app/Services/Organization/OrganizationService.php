@@ -2,6 +2,4 @@
 
 namespace App\Services\Organization;
 
-class OrganizationService
-{
-}
+class OrganizationService {}

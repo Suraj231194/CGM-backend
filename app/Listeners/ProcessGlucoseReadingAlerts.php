@@ -2,6 +2,4 @@
 
 namespace App\Listeners;
 
-class ProcessGlucoseReadingAlerts
-{
-}
+class ProcessGlucoseReadingAlerts {}

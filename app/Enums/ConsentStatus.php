@@ -2,6 +2,9 @@
 
 namespace App\Enums;
 
-enum ConsentStatus
+enum ConsentStatus: string
 {
+    case PENDING = 'pending';
+    case ACCEPTED = 'accepted';
+    case REVOKED = 'revoked';
 }

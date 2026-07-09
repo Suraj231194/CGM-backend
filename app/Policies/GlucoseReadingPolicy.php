@@ -2,6 +2,4 @@
 
 namespace App\Policies;
 
-class GlucoseReadingPolicy
-{
-}
+class GlucoseReadingPolicy {}

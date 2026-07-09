@@ -2,6 +2,4 @@
 
 namespace App\Repositories;
 
-class DoctorRepository
-{
-}
+class DoctorRepository {}

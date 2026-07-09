@@ -2,6 +2,4 @@
 
 namespace App\Repositories;
 
-class DeviceRepository
-{
-}
+class DeviceRepository {}

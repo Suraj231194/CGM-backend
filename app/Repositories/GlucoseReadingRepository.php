@@ -2,6 +2,4 @@
 
 namespace App\Repositories;
 
-class GlucoseReadingRepository
-{
-}
+class GlucoseReadingRepository {}

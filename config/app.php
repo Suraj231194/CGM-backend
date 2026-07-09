@@ -43,6 +43,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Auth Bypass (Development Only)
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, all auth:sanctum middleware is bypassed and requests are
+    | auto-authenticated as the first user in the database. Set to true only
+    | during local development. NEVER enable in production.
+    |
+    */
+
+    'auth_bypass' => (bool) env('AUTH_BYPASS', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
     |

@@ -2,6 +2,4 @@
 
 namespace App\Repositories;
 
-class SensorSessionRepository
-{
-}
+class SensorSessionRepository {}

@@ -2,6 +2,4 @@
 
 namespace App\Services\Patient;
 
-class PatientProfileService
-{
-}
+class PatientProfileService {}

@@ -2,6 +2,4 @@
 
 namespace App\DTOs;
 
-class PatientSharingData
-{
-}
+class PatientSharingData {}

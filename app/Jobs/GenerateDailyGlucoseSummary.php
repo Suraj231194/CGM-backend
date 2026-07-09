@@ -2,6 +2,4 @@
 
 namespace App\Jobs;
 
-class GenerateDailyGlucoseSummary
-{
-}
+class GenerateDailyGlucoseSummary {}

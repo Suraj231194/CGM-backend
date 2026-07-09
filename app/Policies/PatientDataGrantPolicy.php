@@ -2,6 +2,4 @@
 
 namespace App\Policies;
 
-class PatientDataGrantPolicy
-{
-}
+class PatientDataGrantPolicy {}

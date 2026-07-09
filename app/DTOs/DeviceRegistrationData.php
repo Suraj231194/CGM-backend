@@ -2,6 +2,4 @@
 
 namespace App\DTOs;
 
-class DeviceRegistrationData
-{
-}
+class DeviceRegistrationData {}

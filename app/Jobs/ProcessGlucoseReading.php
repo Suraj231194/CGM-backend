@@ -2,6 +2,4 @@
 
 namespace App\Jobs;
 
-class ProcessGlucoseReading
-{
-}
+class ProcessGlucoseReading {}

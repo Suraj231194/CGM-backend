@@ -2,6 +2,4 @@
 
 namespace App\Services\Doctor;
 
-class DoctorPatientService
-{
-}
+class DoctorPatientService {}

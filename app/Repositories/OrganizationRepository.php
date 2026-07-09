@@ -2,6 +2,4 @@
 
 namespace App\Repositories;
 
-class OrganizationRepository
-{
-}
+class OrganizationRepository {}

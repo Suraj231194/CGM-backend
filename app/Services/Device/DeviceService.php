@@ -2,6 +2,4 @@
 
 namespace App\Services\Device;
 
-class DeviceService
-{
-}
+class DeviceService {}
