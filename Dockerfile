@@ -15,7 +15,8 @@ RUN apt-get update \
         pdo_mysql \
         pdo_pgsql \
         zip \
-    && a2enmod headers rewrite \
+    && a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork headers rewrite \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
