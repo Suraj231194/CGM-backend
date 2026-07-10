@@ -18,18 +18,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias([
+        $aliases = [
             'doctor' => EnsureDoctorAccess::class,
             'organization.access' => EnsureOrganizationAccess::class,
             'patient.access' => EnsurePatientAccess::class,
             'role' => EnsureRole::class,
-        ]);
+        ];
 
-        if (env('AUTH_BYPASS', false)) {
-            $middleware->alias([
-                'auth' => BypassAuth::class,
-            ]);
+        if (env('AUTH_BYPASS', false) && env('APP_ENV') !== 'testing') {
+            $aliases['auth'] = BypassAuth::class;
         }
+
+        $middleware->alias($aliases);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
