@@ -1,0 +1,135 @@
+@baseUrl = https://optimus-cgm-backend-production.up.railway.app
+@patientId = 1
+
+### Health check
+GET {{baseUrl}}/up
+
+### Login as seeded doctor
+# @name doctorLogin
+POST {{baseUrl}}/api/auth/sign-in
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "doctor@optimus.test",
+  "password": "password",
+  "device_name": "vs-code-rest-client"
+}
+
+### Login as seeded customer
+# @name customerLogin
+POST {{baseUrl}}/api/auth/sign-in
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "customer@optimus.test",
+  "password": "password",
+  "device_name": "vs-code-rest-client"
+}
+
+### Current user session
+GET {{baseUrl}}/api/auth/session
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Master data: enums
+GET {{baseUrl}}/api/master-data/enums
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Master data: device integrations
+GET {{baseUrl}}/api/master-data/integrations
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Doctor: list assigned patients
+# Copy one returned patients[0].id into @patientId above if it is not 1.
+GET {{baseUrl}}/api/patients
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Doctor dashboard
+GET {{baseUrl}}/api/doctor/dashboard
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Patient detail
+GET {{baseUrl}}/api/patients/{{patientId}}
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Patient dashboard
+GET {{baseUrl}}/api/patients/{{patientId}}/dashboard
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Patient glucose readings
+GET {{baseUrl}}/api/patients/{{patientId}}/readings?limit=20
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Add one glucose reading
+POST {{baseUrl}}/api/patients/{{patientId}}/readings
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+{
+  "value": 142,
+  "timestamp": "2026-07-10T09:10:00+05:30",
+  "trend": "steady",
+  "unit": "mg/dL",
+  "source": "api-test"
+}
+
+### Patient glucose summary
+GET {{baseUrl}}/api/patients/{{patientId}}/glucose-summary
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Patient alerts
+GET {{baseUrl}}/api/patients/{{patientId}}/alerts
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Patient meals
+GET {{baseUrl}}/api/patients/{{patientId}}/meals
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Add meal
+POST {{baseUrl}}/api/patients/{{patientId}}/meals
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+{
+  "type": "lunch",
+  "title": "Rice, dal, salad",
+  "netCarbs": 62,
+  "protein": 18,
+  "fiber": 8,
+  "activityMinutes": 10,
+  "note": "API test meal"
+}
+
+### Patient sensors
+GET {{baseUrl}}/api/patients/{{patientId}}/sensors
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Patient orders
+GET {{baseUrl}}/api/patients/{{patientId}}/orders
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Patient AI interpretations
+GET {{baseUrl}}/api/patients/{{patientId}}/interpretations
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
+
+### Sign out
+POST {{baseUrl}}/api/auth/sign-out
+Accept: application/json
+Authorization: Bearer {{doctorLogin.response.body.token}}
