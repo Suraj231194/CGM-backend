@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Common\MasterDataController;
+use App\Http\Controllers\Common\PushTokenController;
 use App\Http\Controllers\Device\DeviceController;
 use App\Http\Controllers\Device\SensorSessionController;
 use App\Http\Controllers\Doctor\DoctorDashboardController;
@@ -39,6 +40,7 @@ Route::prefix('auth')->group(function (): void {
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/user', fn (Request $request) => new UserResource($request->user()));
+    Route::post('/push-tokens', [PushTokenController::class, 'store'])->middleware('throttle:60,1');
 
     Route::get('/device-integrations', [MasterDataController::class, 'integrations']);
     Route::get('/master-data/integrations', [MasterDataController::class, 'integrations']);
@@ -48,45 +50,75 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/patients', [PatientProfileController::class, 'store'])->middleware('role:doctor,admin');
 
     Route::middleware('patient.access')->prefix('patients/{patient}')->group(function (): void {
-        Route::get('/', [PatientProfileController::class, 'show']);
-        Route::put('/', [PatientProfileController::class, 'update']);
-        Route::get('/dashboard', [PatientDashboardController::class, 'show']);
+        Route::get('/', [PatientProfileController::class, 'show'])
+            ->middleware('patient.permission:profile:read');
+        Route::put('/', [PatientProfileController::class, 'update'])
+            ->middleware('patient.permission:profile:write');
+        Route::get('/dashboard', [PatientDashboardController::class, 'show'])
+            ->middleware('patient.permission:profile:read,readings:read');
 
-        Route::get('/readings', [GlucoseReadingController::class, 'index']);
-        Route::post('/readings', [GlucoseReadingController::class, 'store']);
-        Route::post('/readings/bulk', [GlucoseReadingController::class, 'bulkStore']);
-        Route::get('/glucose-summary', [GlucoseSummaryController::class, 'show']);
+        Route::get('/readings', [GlucoseReadingController::class, 'index'])
+            ->middleware('patient.permission:readings:read');
+        Route::post('/readings', [GlucoseReadingController::class, 'store'])
+            ->middleware('patient.permission:readings:write');
+        Route::post('/readings/bulk', [GlucoseReadingController::class, 'bulkStore'])
+            ->middleware('patient.permission:readings:write');
+        Route::get('/glucose-summary', [GlucoseSummaryController::class, 'show'])
+            ->middleware('patient.permission:readings:read');
 
-        Route::get('/meals', [MealLogController::class, 'index']);
-        Route::post('/meals', [MealLogController::class, 'store']);
+        Route::get('/meals', [MealLogController::class, 'index'])
+            ->middleware('patient.permission:meals:read');
+        Route::post('/meals', [MealLogController::class, 'store'])
+            ->middleware('patient.permission:meals:write');
 
-        Route::get('/sensors', [DeviceController::class, 'index']);
-        Route::post('/sensors', [DeviceController::class, 'store']);
-        Route::get('/sensor-sessions', [SensorSessionController::class, 'index']);
-        Route::post('/sensor-sessions', [SensorSessionController::class, 'store']);
+        Route::get('/sensors', [DeviceController::class, 'index'])
+            ->middleware('patient.permission:devices:read');
+        Route::post('/sensors', [DeviceController::class, 'store'])
+            ->middleware('patient.permission:devices:write');
+        Route::get('/sensor-sessions', [SensorSessionController::class, 'index'])
+            ->middleware('patient.permission:devices:read');
+        Route::post('/sensor-sessions', [SensorSessionController::class, 'store'])
+            ->middleware('patient.permission:devices:write');
 
-        Route::get('/alerts', [GlucoseAlertController::class, 'index']);
-        Route::get('/alert-settings', [GlucoseAlertController::class, 'settings']);
-        Route::put('/alert-settings', [GlucoseAlertController::class, 'updateSettings']);
+        Route::get('/alerts', [GlucoseAlertController::class, 'index'])
+            ->middleware('patient.permission:alerts:read');
+        Route::get('/alert-settings', [GlucoseAlertController::class, 'settings'])
+            ->middleware('patient.permission:alerts:read');
+        Route::put('/alert-settings', [GlucoseAlertController::class, 'updateSettings'])
+            ->middleware('patient.permission:alerts:write');
 
-        Route::get('/reports', [GlucoseReportController::class, 'index']);
-        Route::post('/reports', [GlucoseReportController::class, 'store']);
+        Route::get('/reports', [GlucoseReportController::class, 'index'])
+            ->middleware('patient.permission:reports:read');
+        Route::post('/reports', [GlucoseReportController::class, 'store'])
+            ->middleware('patient.permission:reports:write');
 
-        Route::get('/orders', [SensorOrderController::class, 'index']);
-        Route::post('/orders', [SensorOrderController::class, 'store']);
+        Route::get('/orders', [SensorOrderController::class, 'index'])
+            ->middleware('patient.permission:orders:read');
+        Route::post('/orders', [SensorOrderController::class, 'store'])
+            ->middleware('patient.permission:orders:write');
 
-        Route::get('/interpretations', [AIInterpretationController::class, 'index']);
-        Route::post('/interpretations', [AIInterpretationController::class, 'store'])->middleware('role:doctor,admin');
+        Route::get('/interpretations', [AIInterpretationController::class, 'index'])
+            ->middleware('patient.permission:interpretations:read');
+        Route::post('/interpretations', [AIInterpretationController::class, 'store'])
+            ->middleware(['role:doctor,admin', 'patient.permission:interpretations:write']);
 
-        Route::get('/consent-preferences', [PatientSharingController::class, 'consent']);
-        Route::put('/consent-preferences', [PatientSharingController::class, 'updateConsent']);
-        Route::post('/data-grants', [PatientSharingController::class, 'grantDoctorAccess']);
+        Route::get('/consent-preferences', [PatientSharingController::class, 'consent'])
+            ->middleware('patient.permission:consents:read');
+        Route::put('/consent-preferences', [PatientSharingController::class, 'updateConsent'])
+            ->middleware('patient.permission:consents:write');
+        Route::post('/data-grants', [PatientSharingController::class, 'grantDoctorAccess'])
+            ->middleware('patient.permission:sharing:write');
 
-        Route::get('/clinician-notes', [DoctorPatientController::class, 'notes'])->middleware('role:doctor,admin');
-        Route::post('/clinician-notes', [DoctorPatientController::class, 'addNote'])->middleware('role:doctor,admin');
-        Route::get('/care-tasks', [DoctorPatientController::class, 'tasks'])->middleware('role:doctor,admin');
-        Route::post('/care-tasks', [DoctorPatientController::class, 'assignTask'])->middleware('role:doctor,admin');
-        Route::post('/escalations', [DoctorPatientController::class, 'escalate'])->middleware('role:doctor,admin');
+        Route::get('/clinician-notes', [DoctorPatientController::class, 'notes'])
+            ->middleware(['role:doctor,admin', 'patient.permission:notes:read']);
+        Route::post('/clinician-notes', [DoctorPatientController::class, 'addNote'])
+            ->middleware(['role:doctor,admin', 'patient.permission:notes:write']);
+        Route::get('/care-tasks', [DoctorPatientController::class, 'tasks'])
+            ->middleware(['role:doctor,admin', 'patient.permission:tasks:read']);
+        Route::post('/care-tasks', [DoctorPatientController::class, 'assignTask'])
+            ->middleware(['role:doctor,admin', 'patient.permission:tasks:write']);
+        Route::post('/escalations', [DoctorPatientController::class, 'escalate'])
+            ->middleware(['role:doctor,admin', 'patient.permission:tasks:write']);
     });
 
     Route::patch('/devices/{device}', [DeviceController::class, 'update']);

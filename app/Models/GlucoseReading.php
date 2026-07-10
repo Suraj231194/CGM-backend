@@ -11,6 +11,7 @@ class GlucoseReading extends Model
     protected $fillable = [
         'patient_id',
         'device_id',
+        'client_reading_id',
         'sensor_session_id',
         'timestamp',
         'value',

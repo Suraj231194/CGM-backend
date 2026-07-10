@@ -73,6 +73,11 @@ class User extends Authenticatable
         return $this->hasMany(OrganizationMember::class);
     }
 
+    public function pushTokens(): HasMany
+    {
+        return $this->hasMany(PushToken::class);
+    }
+
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'organization_members')

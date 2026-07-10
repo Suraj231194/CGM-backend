@@ -4,6 +4,7 @@ use App\Http\Middleware\BypassAuth;
 use App\Http\Middleware\EnsureDoctorAccess;
 use App\Http\Middleware\EnsureOrganizationAccess;
 use App\Http\Middleware\EnsurePatientAccess;
+use App\Http\Middleware\EnsurePatientPermission;
 use App\Http\Middleware\EnsureRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,13 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
-        health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $aliases = [
             'doctor' => EnsureDoctorAccess::class,
             'organization.access' => EnsureOrganizationAccess::class,
             'patient.access' => EnsurePatientAccess::class,
+            'patient.permission' => EnsurePatientPermission::class,
             'role' => EnsureRole::class,
         ];
 

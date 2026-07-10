@@ -43,16 +43,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Auth Bypass (Development Only)
+    | Auth Bypass
     |--------------------------------------------------------------------------
     |
-    | When enabled, all auth:sanctum middleware is bypassed and requests are
-    | auto-authenticated as the first user in the database. Set to true only
-    | during local development. NEVER enable in production.
+    | When explicitly enabled, auth:sanctum middleware uses the configured
+    | bypass account. Keep this disabled for any real patient deployment.
     |
     */
 
     'auth_bypass' => (bool) env('AUTH_BYPASS', false),
+    'auth_bypass_email' => env('AUTH_BYPASS_EMAIL', 'customer@optimus.test'),
+    'auth_bypass_password' => env('AUTH_BYPASS_PASSWORD', 'password'),
 
     /*
     |--------------------------------------------------------------------------

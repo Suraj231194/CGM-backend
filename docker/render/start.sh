@@ -16,8 +16,16 @@ fi
 php artisan config:clear
 php artisan migrate --force
 
+if [ "${AUTH_BYPASS:-false}" = "true" ]; then
+    php artisan db:seed --class=Database\\Seeders\\AuthBypassSeeder --force
+fi
+
 if [ "${RUN_DEMO_SEEDERS:-false}" = "true" ]; then
-    php artisan db:seed --force
+    if [ "${APP_ENV:-production}" = "production" ]; then
+        echo "Skipping demo seeders in production."
+    else
+        php artisan db:seed --class=Database\\Seeders\\DemoDatabaseSeeder --force
+    fi
 fi
 
 php artisan config:cache

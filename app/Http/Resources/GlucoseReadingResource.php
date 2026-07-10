@@ -14,6 +14,7 @@ class GlucoseReadingResource extends JsonResource
     {
         return [
             'id' => (string) $this->id,
+            'clientReadingId' => $this->client_reading_id,
             'sensorId' => $this->device_id ? (string) $this->device_id : '',
             'patientId' => (string) $this->patient_id,
             'timestamp' => $this->timestamp?->toISOString(),

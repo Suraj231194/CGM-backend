@@ -7,6 +7,7 @@ use App\Http\Resources\DeviceResource;
 use App\Models\Device;
 use App\Models\PatientProfile;
 use App\Support\ApiResponse;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -31,16 +32,46 @@ class DeviceController extends Controller
             'connectionStatus' => ['nullable', 'string', 'max:40'],
         ]);
 
-        $device = $patient->devices()->create([
-            'serial_number' => $data['serialNumber'] ?? $data['serial_number'],
-            'model' => $data['model'] ?? 'Optimus CGM 14-day sensor',
-            'manufacturer' => $data['manufacturer'] ?? 'Optimus',
-            'status' => $data['status'] ?? 'inactive',
-            'battery_status' => $data['batteryStatus'] ?? 100,
-            'connection_status' => $data['connectionStatus'] ?? 'offline',
-        ]);
+        $serialNumber = strtoupper(trim($data['serialNumber'] ?? $data['serial_number']));
+        try {
+            $device = Device::query()->firstOrCreate(
+                ['serial_number' => $serialNumber],
+                [
+                    'patient_id' => $patient->id,
+                    'model' => $data['model'] ?? 'Optimus CGM 14-day sensor',
+                    'manufacturer' => $data['manufacturer'] ?? 'Optimus',
+                    'status' => $data['status'] ?? 'inactive',
+                    'battery_status' => $data['batteryStatus'] ?? 100,
+                    'connection_status' => $data['connectionStatus'] ?? 'offline',
+                ],
+            );
+        } catch (QueryException $exception) {
+            $device = Device::query()->where('serial_number', $serialNumber)->first();
 
-        return response()->json(new DeviceResource($device), 201);
+            if (! $device) {
+                throw $exception;
+            }
+        }
+
+        if ((int) $device->patient_id !== (int) $patient->id) {
+            return ApiResponse::error(
+                'This sensor is already registered to another patient.',
+                status: 409,
+            );
+        }
+
+        $created = $device->wasRecentlyCreated;
+
+        if (! $created) {
+            $device->update(array_filter([
+                'status' => $data['status'] ?? null,
+                'battery_status' => $data['batteryStatus'] ?? null,
+                'connection_status' => $data['connectionStatus'] ?? null,
+                'last_sync_at' => now(),
+            ], fn ($value) => $value !== null));
+        }
+
+        return response()->json(new DeviceResource($device->refresh()), $created ? 201 : 200);
     }
 
     public function update(Request $request, Device $device): JsonResponse

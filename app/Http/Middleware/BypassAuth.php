@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Development-only middleware that skips token authentication.
- * Auto-authenticates as the first user (or the user specified via X-Bypass-User-Id header).
+ * Explicit bypass middleware that skips token authentication.
+ * Uses the configured bypass account unless X-Bypass-User-Id is supplied.
  */
 class BypassAuth
 {
@@ -19,12 +19,19 @@ class BypassAuth
         $userId = $request->header('X-Bypass-User-Id');
         $user = $userId
             ? User::query()->find($userId)
-            : User::query()->first();
+            : User::query()->where(
+                'email',
+                config('app.auth_bypass_email', 'customer@optimus.test'),
+            )->first();
 
-        if ($user) {
-            Auth::setUser($user);
-            $request->setUserResolver(fn () => $user);
+        if (! $user) {
+            return response()->json([
+                'message' => 'Authentication bypass account is not provisioned.',
+            ], 503);
         }
+
+        Auth::setUser($user);
+        $request->setUserResolver(fn () => $user);
 
         return $next($request);
     }
