@@ -44,6 +44,18 @@ class PatientApiTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_customer_can_list_their_own_meals(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $customer = User::query()->where('email', 'customer@optimus.test')->firstOrFail();
+        $patient = PatientProfile::query()->where('user_id', $customer->id)->firstOrFail();
+
+        $this->withToken($this->tokenFor('customer@optimus.test'))
+            ->getJson("/api/patients/{$patient->id}/meals")
+            ->assertOk()
+            ->assertJsonStructure(['success', 'meals']);
+    }
+
     public function test_patient_reading_ingestion_creates_alert(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -280,6 +292,30 @@ class PatientApiTest extends TestCase
                 'title' => 'Not permitted',
             ])
             ->assertForbidden();
+    }
+
+    public function test_shared_doctor_can_list_meals_when_the_permission_is_granted(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $patient = PatientProfile::query()->whereNotNull('user_id')->firstOrFail();
+        $sharedDoctor = User::factory()->create([
+            'role' => 'doctor',
+            'email' => 'meal-reader@optimus.test',
+        ]);
+        PatientDataGrant::query()->create([
+            'patient_id' => $patient->id,
+            'doctor_id' => $sharedDoctor->id,
+            'granted_by' => $patient->user_id,
+            'status' => 'accepted',
+            'permissions' => ['meals:read'],
+            'granted_at' => now(),
+        ]);
+        $token = $sharedDoctor->createToken('test', $sharedDoctor->tokenAbilities())->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson("/api/patients/{$patient->id}/meals")
+            ->assertOk()
+            ->assertJsonStructure(['success', 'meals']);
     }
 
     public function test_authenticated_user_can_register_a_push_token_idempotently(): void
